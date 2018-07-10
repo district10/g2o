@@ -33,9 +33,10 @@
 #include "g2o/types/slam3d/se3quat.h"
 #include "g2o_deprecated_types_slam3d_api.h"
 
-namespace g2o {
-namespace deprecated {
-
+namespace g2o
+{
+namespace deprecated
+{
 
 /**
  * \brief 3D pose Vertex, (x,y,z,qw,qx,qy,qz)
@@ -48,72 +49,76 @@ class G2O_DEPRECATED_TYPES_SLAM3D_API VertexSE3 : public BaseVertex<6, SE3Quat>
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
     VertexSE3();
 
-    virtual void setToOriginImpl() {
-      _estimate = SE3Quat();
-    }
+    virtual void setToOriginImpl() { _estimate = SE3Quat(); }
 
-    virtual bool read(std::istream& is);
-    virtual bool write(std::ostream& os) const;
+    virtual bool read(std::istream &is);
+    virtual bool write(std::ostream &os) const;
 
-
-    virtual bool setEstimateDataImpl(const double* est){
-      Eigen::Map<const Vector7> v(est);
-      _estimate.fromVector(v);
-      return true;
-    }
-
-    virtual bool getEstimateData(double* est) const{
-      Eigen::Map<Vector7> v(est);
-      v=_estimate.toVector();
-      return true;
-    }
-
-    virtual int estimateDimension() const {
-      return 7;
-    }
-
-    virtual bool setMinimalEstimateDataImpl(const double* est){
-      Eigen::Map<const Vector6> v(est);
-      _estimate.fromMinimalVector(v);
-      return true;
-    }
-
-    virtual bool getMinimalEstimateData(double* est) const{
-      Eigen::Map<Vector6> v(est);
-      v = _estimate.toMinimalVector();
-      return true;
-    }
-
-    virtual int minimalEstimateDimension() const {
-      return 6;
-    }
-
-    virtual void oplusImpl(const double* update)
+    virtual bool setEstimateDataImpl(const double *est)
     {
-      Eigen::Map<const Vector6> v(update);
-      SE3Quat increment(v);
-      _estimate *= increment;
+        Eigen::Map<const Vector7> v(est);
+        _estimate.fromVector(v);
+        return true;
+    }
+
+    virtual bool getEstimateData(double *est) const
+    {
+        Eigen::Map<Vector7> v(est);
+        v = _estimate.toVector();
+        return true;
+    }
+
+    virtual int estimateDimension() const { return 7; }
+
+    virtual bool setMinimalEstimateDataImpl(const double *est)
+    {
+        Eigen::Map<const Vector6> v(est);
+        _estimate.fromMinimalVector(v);
+        return true;
+    }
+
+    virtual bool getMinimalEstimateData(double *est) const
+    {
+        Eigen::Map<Vector6> v(est);
+        v = _estimate.toMinimalVector();
+        return true;
+    }
+
+    virtual int minimalEstimateDimension() const { return 6; }
+
+    virtual void oplusImpl(const double *update)
+    {
+        Eigen::Map<const Vector6> v(update);
+        SE3Quat increment(v);
+        _estimate *= increment;
     }
 };
 
-  class G2O_DEPRECATED_TYPES_SLAM3D_API VertexSE3WriteGnuplotAction: public WriteGnuplotAction {
+class G2O_DEPRECATED_TYPES_SLAM3D_API VertexSE3WriteGnuplotAction
+    : public WriteGnuplotAction
+{
   public:
     VertexSE3WriteGnuplotAction();
-    virtual HyperGraphElementAction* operator()(HyperGraph::HyperGraphElement* element, 
-            HyperGraphElementAction::Parameters* params_ );
-  };
+    virtual HyperGraphElementAction *
+    operator()(HyperGraph::HyperGraphElement *element,
+               HyperGraphElementAction::Parameters *params_);
+};
 
 #ifdef G2O_HAVE_OPENGL
-  class G2O_DEPRECATED_TYPES_SLAM3D_API VertexSE3DrawAction: public DrawAction{
+class G2O_DEPRECATED_TYPES_SLAM3D_API VertexSE3DrawAction : public DrawAction
+{
   public:
     VertexSE3DrawAction();
-    virtual HyperGraphElementAction* operator()(HyperGraph::HyperGraphElement* element, 
-            HyperGraphElementAction::Parameters* params_ );
-    HyperGraphElementAction* _cacheDrawActions;
+    virtual HyperGraphElementAction *
+    operator()(HyperGraph::HyperGraphElement *element,
+               HyperGraphElementAction::Parameters *params_);
+    HyperGraphElementAction *_cacheDrawActions;
+
   protected:
-    virtual bool refreshPropertyPtrs(HyperGraphElementAction::Parameters* params_);
-    FloatProperty* _triangleX, *_triangleY;
-  };
+    virtual bool
+    refreshPropertyPtrs(HyperGraphElementAction::Parameters *params_);
+    FloatProperty *_triangleX, *_triangleY;
+};
 #endif
 
 } // end namespace

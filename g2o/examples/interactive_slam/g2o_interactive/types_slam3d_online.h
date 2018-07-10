@@ -27,63 +27,71 @@
 #ifndef G2O_TYPES_SLAM3D_ONLINE_H
 #define G2O_TYPES_SLAM3D_ONLINE_H
 
-#include "g2o_interactive_api.h"
 #include "g2o/types/slam3d/edge_se3.h"
+#include "g2o_interactive_api.h"
 
 #include <iostream>
 
-namespace g2o {
-  
-  class G2O_INTERACTIVE_API OnlineVertexSE3 : public VertexSE3
-  {
-    public:
-      EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
-      OnlineVertexSE3() : VertexSE3(), updatedEstimate(Eigen::Isometry3d::Identity()) {}
+namespace g2o
+{
 
-      virtual void oplusImpl(const double* update)
-      {
+class G2O_INTERACTIVE_API OnlineVertexSE3 : public VertexSE3
+{
+  public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+    OnlineVertexSE3()
+        : VertexSE3(), updatedEstimate(Eigen::Isometry3d::Identity())
+    {
+    }
+
+    virtual void oplusImpl(const double *update)
+    {
         VertexSE3::oplusImpl(update);
         updatedEstimate = _estimate;
-      }
+    }
 
-      void oplusUpdatedEstimate(double* update)
-      {
+    void oplusUpdatedEstimate(double *update)
+    {
         Eigen::Map<const Vector6> v(update);
         Isometry3 increment = internal::fromVectorMQT(v);
         updatedEstimate = _estimate * increment;
-      }
+    }
 
-      VertexSE3::EstimateType updatedEstimate;
-  };
+    VertexSE3::EstimateType updatedEstimate;
+};
 
-  class G2O_INTERACTIVE_API OnlineEdgeSE3 : public EdgeSE3
-  {
-    public:
-      EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
-      OnlineEdgeSE3() : EdgeSE3() {}
+class G2O_INTERACTIVE_API OnlineEdgeSE3 : public EdgeSE3
+{
+  public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+    OnlineEdgeSE3() : EdgeSE3() {}
 
-      void initialEstimate(const OptimizableGraph::VertexSet& from, OptimizableGraph::Vertex* /* to */)
-      {
-        OnlineVertexSE3* fromEdge = static_cast<OnlineVertexSE3*>(_vertices[0]);
-        OnlineVertexSE3* toEdge   = static_cast<OnlineVertexSE3*>(_vertices[1]);
+    void initialEstimate(const OptimizableGraph::VertexSet &from,
+                         OptimizableGraph::Vertex * /* to */)
+    {
+        OnlineVertexSE3 *fromEdge =
+            static_cast<OnlineVertexSE3 *>(_vertices[0]);
+        OnlineVertexSE3 *toEdge = static_cast<OnlineVertexSE3 *>(_vertices[1]);
         if (from.count(fromEdge) > 0) {
-          toEdge->updatedEstimate = fromEdge->updatedEstimate * _measurement;
-          toEdge->setEstimate(toEdge->updatedEstimate);
+            toEdge->updatedEstimate = fromEdge->updatedEstimate * _measurement;
+            toEdge->setEstimate(toEdge->updatedEstimate);
         } else {
-          fromEdge->updatedEstimate = toEdge->updatedEstimate * _inverseMeasurement;
-          fromEdge->setEstimate(fromEdge->updatedEstimate);
+            fromEdge->updatedEstimate =
+                toEdge->updatedEstimate * _inverseMeasurement;
+            fromEdge->setEstimate(fromEdge->updatedEstimate);
         }
-      }
+    }
 
-      double chi2() const
-      {
-        OnlineVertexSE3 *from = static_cast<OnlineVertexSE3*>(_vertices[0]);
-        OnlineVertexSE3 *to   = static_cast<OnlineVertexSE3*>(_vertices[1]);
-        Eigen::Isometry3d delta = _inverseMeasurement * from->estimate().inverse() * to->estimate();
+    double chi2() const
+    {
+        OnlineVertexSE3 *from = static_cast<OnlineVertexSE3 *>(_vertices[0]);
+        OnlineVertexSE3 *to = static_cast<OnlineVertexSE3 *>(_vertices[1]);
+        Eigen::Isometry3d delta =
+            _inverseMeasurement * from->estimate().inverse() * to->estimate();
         Vector6 error = internal::toVectorMQT(delta);
         return error.dot(information() * error);
-      }
-  };
+    }
+};
 
 } // end namespace
 

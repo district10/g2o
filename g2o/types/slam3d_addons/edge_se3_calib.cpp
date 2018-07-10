@@ -26,54 +26,57 @@
 
 #include "edge_se3_calib.h"
 
-namespace g2o {
+namespace g2o
+{
 
-  EdgeSE3Calib::EdgeSE3Calib() :
-    BaseMultiEdge<6, Isometry3>()
-  {
-    resize(3);
-  }
+EdgeSE3Calib::EdgeSE3Calib() : BaseMultiEdge<6, Isometry3>() { resize(3); }
 
-  void EdgeSE3Calib::computeError()
-  {
-    const VertexSE3* v1 = static_cast<const VertexSE3*>(_vertices[0]);
-    const VertexSE3* v2 = static_cast<const VertexSE3*>(_vertices[1]);
-    const VertexSE3* calib  = static_cast<const VertexSE3*>(_vertices[2]);
-    _error = g2o::internal::toVectorMQT(_measurement.inverse()*calib->estimate().inverse() * v1->estimate().inverse() * v2->estimate()*calib->estimate());
-  }
+void EdgeSE3Calib::computeError()
+{
+    const VertexSE3 *v1 = static_cast<const VertexSE3 *>(_vertices[0]);
+    const VertexSE3 *v2 = static_cast<const VertexSE3 *>(_vertices[1]);
+    const VertexSE3 *calib = static_cast<const VertexSE3 *>(_vertices[2]);
+    _error = g2o::internal::toVectorMQT(
+        _measurement.inverse() * calib->estimate().inverse() *
+        v1->estimate().inverse() * v2->estimate() * calib->estimate());
+}
 
-  bool EdgeSE3Calib::write(std::ostream& os) const {
-    Vector7 meas=g2o::internal::toVectorQT(_measurement);
-    for (int i=0; i<7; i++) os  << meas[i] << " ";
-    for (int i=0; i<information().rows(); i++)
-      for (int j=i; j<information().cols(); j++) {
-        os <<  information()(i,j) << " ";
-      }
+bool EdgeSE3Calib::write(std::ostream &os) const
+{
+    Vector7 meas = g2o::internal::toVectorQT(_measurement);
+    for (int i = 0; i < 7; i++)
+        os << meas[i] << " ";
+    for (int i = 0; i < information().rows(); i++)
+        for (int j = i; j < information().cols(); j++) {
+            os << information()(i, j) << " ";
+        }
     return os.good();
-  }
+}
 
-  bool EdgeSE3Calib::read(std::istream& is) {
+bool EdgeSE3Calib::read(std::istream &is)
+{
     Vector7 meas;
-    for (int i=0; i<7; i++)
-      is >> meas[i];
-    // normalize the quaternion to recover numerical precision lost by storing as human readable text
-    Vector4::MapType(meas.data()+3).normalize();
+    for (int i = 0; i < 7; i++)
+        is >> meas[i];
+    // normalize the quaternion to recover numerical precision lost by storing
+    // as human readable text
+    Vector4::MapType(meas.data() + 3).normalize();
     setMeasurement(g2o::internal::fromVectorQT(meas));
 
     if (is.bad()) {
-      return false;
+        return false;
     }
-    for ( int i=0; i<information().rows() && is.good(); i++)
-      for (int j=i; j<information().cols() && is.good(); j++){
-        is >> information()(i,j);
-        if (i!=j)
-          information()(j,i)=information()(i,j);
-      }
+    for (int i = 0; i < information().rows() && is.good(); i++)
+        for (int j = i; j < information().cols() && is.good(); j++) {
+            is >> information()(i, j);
+            if (i != j)
+                information()(j, i) = information()(i, j);
+        }
     if (is.bad()) {
-      //  we overwrite the information matrix with the Identity
-      information().setIdentity();
+        //  we overwrite the information matrix with the Identity
+        information().setIdentity();
     }
     return true;
-  }
+}
 
 } // end namespace

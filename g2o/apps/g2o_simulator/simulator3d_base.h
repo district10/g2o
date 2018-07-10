@@ -31,16 +31,16 @@
 #include "g2o/types/slam3d_addons/types_slam3d_addons.h"
 #include "simulator.h"
 
-namespace g2o {
+namespace g2o
+{
 
-  typedef WorldObject<VertexSE3> WorldObjectSE3;
+typedef WorldObject<VertexSE3> WorldObjectSE3;
 
-  typedef WorldObject<VertexPointXYZ> WorldObjectTrackXYZ;
+typedef WorldObject<VertexPointXYZ> WorldObjectTrackXYZ;
 
-  typedef WorldObject<VertexLine3D> WorldObjectLine3D;
+typedef WorldObject<VertexLine3D> WorldObjectLine3D;
 
-  typedef Robot<WorldObjectSE3>  Robot3D;
-
+typedef Robot<WorldObjectSE3> Robot3D;
 }
 
 #endif

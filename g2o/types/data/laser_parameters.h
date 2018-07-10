@@ -30,16 +30,20 @@
 #include "g2o/types/slam2d/se2.h"
 #include "g2o_types_data_api.h"
 
-namespace g2o {
+namespace g2o
+{
 
-  /**
-   * \brief parameters for a 2D range finder
-   */
-  struct G2O_TYPES_DATA_API LaserParameters
-  {
+/**
+ * \brief parameters for a 2D range finder
+ */
+struct G2O_TYPES_DATA_API LaserParameters
+{
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
-    LaserParameters(int type, int beams, number_t firstBeamAngle, number_t angularStep, number_t maxRange, number_t accuracy, int remissionMode, number_t minRange = 0);
-    LaserParameters(int beams, number_t firstBeamAngle, number_t angularStep, number_t maxRange, number_t minRange = 0);
+    LaserParameters(int type, int beams, number_t firstBeamAngle,
+                    number_t angularStep, number_t maxRange, number_t accuracy,
+                    int remissionMode, number_t minRange = 0);
+    LaserParameters(int beams, number_t firstBeamAngle, number_t angularStep,
+                    number_t maxRange, number_t minRange = 0);
     SE2 laserPose;
     int type;
     number_t firstBeamAngle;
@@ -49,8 +53,7 @@ namespace g2o {
     int remissionMode;
     number_t maxRange;
     number_t minRange;
-  };
-
+};
 }
 
 #endif

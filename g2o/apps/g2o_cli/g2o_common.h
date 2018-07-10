@@ -29,20 +29,23 @@
 
 #include "g2o_cli_api.h"
 
-namespace g2o {
+namespace g2o
+{
 
-  class DlWrapper;
-  class DlSolverWrapper;
+class DlWrapper;
+class DlSolverWrapper;
 
-  /**
-   * will also look for -typeslib in (argc, argv) and load that types
-   */
-  G2O_CLI_API void loadStandardTypes(DlWrapper& dlWrapper, int argc = 0, char** argv = 0);
+/**
+ * will also look for -typeslib in (argc, argv) and load that types
+ */
+G2O_CLI_API void loadStandardTypes(DlWrapper &dlWrapper, int argc = 0,
+                                   char **argv = 0);
 
-  /**
-   * will also look for -solverlib in (argc, argv) and load that solver
-   */
-  G2O_CLI_API void loadStandardSolver(DlWrapper& dlSolverWrapper, int argc = 0, char** argv = 0);
+/**
+ * will also look for -solverlib in (argc, argv) and load that solver
+ */
+G2O_CLI_API void loadStandardSolver(DlWrapper &dlSolverWrapper, int argc = 0,
+                                    char **argv = 0);
 
 } // end namespace
 

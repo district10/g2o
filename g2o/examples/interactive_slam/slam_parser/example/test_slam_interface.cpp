@@ -32,13 +32,12 @@ using namespace std;
 
 int main()
 {
-  ExampleSlamInterface slamInterface;
-  SlamParser::ParserInterface parserInterface(&slamInterface);
+    ExampleSlamInterface slamInterface;
+    SlamParser::ParserInterface parserInterface(&slamInterface);
 
-  while (parserInterface.parseCommand(cin))
-  {
-    // do something additional if needed
-  }
+    while (parserInterface.parseCommand(cin)) {
+        // do something additional if needed
+    }
 
-  return 0;
+    return 0;
 }

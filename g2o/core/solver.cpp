@@ -27,62 +27,58 @@
 #include "solver.h"
 #include "dynamic_aligned_buffer.hpp"
 
-#include <cstring>
 #include <algorithm>
+#include <cstring>
 
-namespace g2o {
+namespace g2o
+{
 
-Solver::Solver() :
-  _optimizer(0), _x(0), _b(0), _xSize(0), _maxXSize(0),
-  _isLevenberg(false), _additionalVectorSpace(0)
+Solver::Solver()
+    : _optimizer(0), _x(0), _b(0), _xSize(0), _maxXSize(0), _isLevenberg(false),
+      _additionalVectorSpace(0)
 {
 }
 
 Solver::~Solver()
 {
-  free_aligned(_x);
-  free_aligned(_b);
+    free_aligned(_x);
+    free_aligned(_b);
 }
 
 void Solver::resizeVector(size_t sx)
 {
-  size_t oldSize = _xSize;
-  _xSize = sx;
-  sx += _additionalVectorSpace; // allocate some additional space if requested
-  if (_maxXSize < sx) {
-    _maxXSize = 2*sx;
-    free_aligned(_x);
-    _x = allocate_aligned<number_t>(_maxXSize);
+    size_t oldSize = _xSize;
+    _xSize = sx;
+    sx += _additionalVectorSpace; // allocate some additional space if requested
+    if (_maxXSize < sx) {
+        _maxXSize = 2 * sx;
+        free_aligned(_x);
+        _x = allocate_aligned<number_t>(_maxXSize);
 #ifndef NDEBUG
-    memset(_x, 0, _maxXSize * sizeof(number_t));
+        memset(_x, 0, _maxXSize * sizeof(number_t));
 #endif
-    if (_b) { // backup the former b, might still be needed for online processing
-      memcpy(_x, _b, oldSize * sizeof(number_t));
-      free_aligned(_b);
-      _b = allocate_aligned<number_t>(_maxXSize);
-      std::swap(_b, _x);
-    } else {
-      _b = allocate_aligned<number_t>(_maxXSize);
+        if (_b) { // backup the former b, might still be needed for online
+                  // processing
+            memcpy(_x, _b, oldSize * sizeof(number_t));
+            free_aligned(_b);
+            _b = allocate_aligned<number_t>(_maxXSize);
+            std::swap(_b, _x);
+        } else {
+            _b = allocate_aligned<number_t>(_maxXSize);
 #ifndef NDEBUG
-      memset(_b, 0, _maxXSize * sizeof(number_t));
+            memset(_b, 0, _maxXSize * sizeof(number_t));
 #endif
+        }
     }
-  }
 }
 
-void Solver::setOptimizer(SparseOptimizer* optimizer)
+void Solver::setOptimizer(SparseOptimizer *optimizer)
 {
-  _optimizer = optimizer;
+    _optimizer = optimizer;
 }
 
-void Solver::setLevenberg(bool levenberg)
-{
-  _isLevenberg = levenberg;
-}
+void Solver::setLevenberg(bool levenberg) { _isLevenberg = levenberg; }
 
-void Solver::setAdditionalVectorSpace(size_t s)
-{
-  _additionalVectorSpace = s;
-}
+void Solver::setAdditionalVectorSpace(size_t s) { _additionalVectorSpace = s; }
 
 } // end namespace

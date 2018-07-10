@@ -26,60 +26,64 @@
 
 #include "sparse_helper.h"
 
-#include <string>
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
+#include <string>
 #include <vector>
-#include <algorithm>
 
 using namespace std;
 
-namespace g2o {
+namespace g2o
+{
 
-  namespace {
-    struct TripletEntry
+namespace
+{
+struct TripletEntry
+{
+    int r, c;
+    number_t x;
+    TripletEntry(int r_, int c_, number_t x_) : r(r_), c(c_), x(x_) {}
+};
+struct TripletColSort
+{
+    bool operator()(const TripletEntry &e1, const TripletEntry &e2) const
     {
-      int r, c;
-      number_t x;
-      TripletEntry(int r_, int c_, number_t x_) : r(r_), c(c_), x(x_) {}
-    };
-    struct TripletColSort
-    {
-      bool operator()(const TripletEntry& e1, const TripletEntry& e2) const
-      {
         return e1.c < e2.c || (e1.c == e2.c && e1.r < e2.r);
-      }
-    };
-  }
+    }
+};
+}
 
-  bool writeVector(const string& filename, const number_t*v, int n)
-  {
+bool writeVector(const string &filename, const number_t *v, int n)
+{
     ofstream os(filename.c_str());
     os << fixed;
-    for (int i=0; i<n; i++)
-      os << *v++ << endl;
+    for (int i = 0; i < n; i++)
+        os << *v++ << endl;
     return os.good();
-  }
+}
 
-  bool writeCCSMatrix(const string& filename, int rows, int cols, const int* Ap, const int* Ai, const number_t* Ax, bool upperTriangleSymmetric)
-  {
+bool writeCCSMatrix(const string &filename, int rows, int cols, const int *Ap,
+                    const int *Ai, const number_t *Ax,
+                    bool upperTriangleSymmetric)
+{
     vector<TripletEntry> entries;
     entries.reserve((size_t)Ap[cols]);
-    for (int i=0; i < cols; i++) {
-      const int& rbeg = Ap[i];
-      const int& rend = Ap[i+1];
-      for (int j = rbeg; j < rend; j++) {
-        entries.push_back(TripletEntry(Ai[j], i, Ax[j]));
-        if (upperTriangleSymmetric && Ai[j] != i)
-          entries.push_back(TripletEntry(i, Ai[j], Ax[j]));
-      }
+    for (int i = 0; i < cols; i++) {
+        const int &rbeg = Ap[i];
+        const int &rend = Ap[i + 1];
+        for (int j = rbeg; j < rend; j++) {
+            entries.push_back(TripletEntry(Ai[j], i, Ax[j]));
+            if (upperTriangleSymmetric && Ai[j] != i)
+                entries.push_back(TripletEntry(i, Ai[j], Ax[j]));
+        }
     }
     sort(entries.begin(), entries.end(), TripletColSort());
 
     string name = filename;
     std::string::size_type lastDot = name.find_last_of('.');
-    if (lastDot != std::string::npos) 
-      name = name.substr(0, lastDot);
+    if (lastDot != std::string::npos)
+        name = name.substr(0, lastDot);
 
     std::ofstream fout(filename.c_str());
     fout << "# name: " << name << std::endl;
@@ -87,13 +91,15 @@ namespace g2o {
     fout << "# nnz: " << entries.size() << std::endl;
     fout << "# rows: " << rows << std::endl;
     fout << "# columns: " << cols << std::endl;
-    //fout << fixed;
+    // fout << fixed;
     fout << setprecision(9) << endl;
-    for (vector<TripletEntry>::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-      const TripletEntry& entry = *it;
-      fout << entry.r+1 << " " << entry.c+1 << " " << entry.x << std::endl;
+    for (vector<TripletEntry>::const_iterator it = entries.begin();
+         it != entries.end(); ++it) {
+        const TripletEntry &entry = *it;
+        fout << entry.r + 1 << " " << entry.c + 1 << " " << entry.x
+             << std::endl;
     }
     return fout.good();
-  }
+}
 
 } // end namespace

@@ -24,97 +24,104 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <iostream>
 #include "edge_se3_plane_calib.h"
+#include <iostream>
 
 #include "g2o/stuff/opengl_wrapper.h"
 
 namespace g2o
 {
-  using namespace std;
-  using namespace Eigen;
+using namespace std;
+using namespace Eigen;
 
-  EdgeSE3PlaneSensorCalib::EdgeSE3PlaneSensorCalib() :
-    BaseMultiEdge<3, Plane3D>()
-  {
+EdgeSE3PlaneSensorCalib::EdgeSE3PlaneSensorCalib() : BaseMultiEdge<3, Plane3D>()
+{
     resize(3);
     color << cst(0.1), cst(0.1), cst(0.1);
-  }
+}
 
-  bool EdgeSE3PlaneSensorCalib::read(std::istream& is)
-  {
+bool EdgeSE3PlaneSensorCalib::read(std::istream &is)
+{
     Vector4 v;
     is >> v(0) >> v(1) >> v(2) >> v(3);
     setMeasurement(Plane3D(v));
     is >> color(0) >> color(1) >> color(2);
     for (int i = 0; i < information().rows(); ++i)
-      for (int j = i; j < information().cols(); ++j) {
-        is >> information()(i, j);
-        if (i != j)
-          information()(j, i) = information()(i, j);
-      }
+        for (int j = i; j < information().cols(); ++j) {
+            is >> information()(i, j);
+            if (i != j)
+                information()(j, i) = information()(i, j);
+        }
     return true;
-  }
+}
 
-  bool EdgeSE3PlaneSensorCalib::write(std::ostream& os) const
-  {
+bool EdgeSE3PlaneSensorCalib::write(std::ostream &os) const
+{
     Vector4 v = _measurement.toVector();
     os << v(0) << " " << v(1) << " " << v(2) << " " << v(3) << " ";
     os << color(0) << " " << color(1) << " " << color(2) << " ";
     for (int i = 0; i < information().rows(); ++i)
-      for (int j = i; j < information().cols(); ++j)
-        os << " " << information()(i, j);
+        for (int j = i; j < information().cols(); ++j)
+            os << " " << information()(i, j);
     return os.good();
-  }
-
+}
 
 #ifdef G2O_HAVE_OPENGL
 
-  EdgeSE3PlaneSensorCalibDrawAction::EdgeSE3PlaneSensorCalibDrawAction(): DrawAction(typeid(EdgeSE3PlaneSensorCalib).name()){
-  }
+EdgeSE3PlaneSensorCalibDrawAction::EdgeSE3PlaneSensorCalibDrawAction()
+    : DrawAction(typeid(EdgeSE3PlaneSensorCalib).name())
+{
+}
 
-  bool EdgeSE3PlaneSensorCalibDrawAction::refreshPropertyPtrs(HyperGraphElementAction::Parameters* params_){
+bool EdgeSE3PlaneSensorCalibDrawAction::refreshPropertyPtrs(
+    HyperGraphElementAction::Parameters *params_)
+{
     if (!DrawAction::refreshPropertyPtrs(params_))
-      return false;
-    if (_previousParams){
-      _planeWidth = _previousParams->makeProperty<FloatProperty>(_typeName + "::PLANE_WIDTH", 3.0f);
-      _planeHeight = _previousParams->makeProperty<FloatProperty>(_typeName + "::PLANE_HEIGHT", 3.0f);
+        return false;
+    if (_previousParams) {
+        _planeWidth = _previousParams->makeProperty<FloatProperty>(
+            _typeName + "::PLANE_WIDTH", 3.0f);
+        _planeHeight = _previousParams->makeProperty<FloatProperty>(
+            _typeName + "::PLANE_HEIGHT", 3.0f);
     } else {
-      _planeWidth = 0;
-      _planeHeight = 0;
+        _planeWidth = 0;
+        _planeHeight = 0;
     }
     return true;
-  }
+}
 
-  HyperGraphElementAction* EdgeSE3PlaneSensorCalibDrawAction::operator()(HyperGraph::HyperGraphElement* element,
-                 HyperGraphElementAction::Parameters* params_)
-  {
-    if (typeid(*element).name()!=_typeName)
-      return 0;
+HyperGraphElementAction *EdgeSE3PlaneSensorCalibDrawAction::
+operator()(HyperGraph::HyperGraphElement *element,
+           HyperGraphElementAction::Parameters *params_)
+{
+    if (typeid(*element).name() != _typeName)
+        return 0;
 
     refreshPropertyPtrs(params_);
-    if (! _previousParams)
-      return this;
+    if (!_previousParams)
+        return this;
 
     if (_show && !_show->value())
-      return this;
+        return this;
 
-    EdgeSE3PlaneSensorCalib* that = dynamic_cast<EdgeSE3PlaneSensorCalib*>(element);
+    EdgeSE3PlaneSensorCalib *that =
+        dynamic_cast<EdgeSE3PlaneSensorCalib *>(element);
 
-    if (! that)
-      return this;
+    if (!that)
+        return this;
 
-    const VertexSE3* robot  = dynamic_cast<const VertexSE3*>(that->vertex(0));
-    const VertexSE3* sensor = dynamic_cast<const VertexSE3*>(that->vertex(2));
+    const VertexSE3 *robot = dynamic_cast<const VertexSE3 *>(that->vertex(0));
+    const VertexSE3 *sensor = dynamic_cast<const VertexSE3 *>(that->vertex(2));
 
-    if (! robot|| ! sensor)
-      return 0;
+    if (!robot || !sensor)
+        return 0;
 
-    number_t d=that->measurement().distance();
-    number_t azimuth=Plane3D::azimuth(that->measurement().normal());
-    number_t elevation=Plane3D::elevation(that->measurement().normal());
+    number_t d = that->measurement().distance();
+    number_t azimuth = Plane3D::azimuth(that->measurement().normal());
+    number_t elevation = Plane3D::elevation(that->measurement().normal());
 
-    glColor3f(float(that->color(0)), float(that->color(1)), float(that->color(2)));
+    glColor3f(float(that->color(0)), float(that->color(1)),
+              float(that->color(2)));
     glPushMatrix();
     Isometry3 robotAndSensor = robot->estimate() * sensor->estimate();
     glMultMatrixd(robotAndSensor.matrix().cast<double>().eval().data());
@@ -126,23 +133,23 @@ namespace g2o
     float planeWidth = 0.5f;
     float planeHeight = 0.5f;
     if (0) {
-      planeWidth = _planeWidth->value();
-      planeHeight = _planeHeight->value();
+        planeWidth = _planeWidth->value();
+        planeHeight = _planeHeight->value();
     }
-    if (_planeWidth && _planeHeight){
-      glBegin(GL_QUADS);
-      glNormal3f(-1,0,0);
-      glVertex3f(0,-planeWidth, -planeHeight);
-      glVertex3f(0, planeWidth, -planeHeight);
-      glVertex3f(0, planeWidth,  planeHeight);
-      glVertex3f(0,-planeWidth,  planeHeight);
-      glEnd();
+    if (_planeWidth && _planeHeight) {
+        glBegin(GL_QUADS);
+        glNormal3f(-1, 0, 0);
+        glVertex3f(0, -planeWidth, -planeHeight);
+        glVertex3f(0, planeWidth, -planeHeight);
+        glVertex3f(0, planeWidth, planeHeight);
+        glVertex3f(0, -planeWidth, planeHeight);
+        glEnd();
     }
 
     glPopMatrix();
 
     return this;
-  }
+}
 #endif
 
 } // end namespace

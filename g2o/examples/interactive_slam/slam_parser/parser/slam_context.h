@@ -29,7 +29,8 @@
 
 #include <vector>
 
-namespace SlamParser {
+namespace SlamParser
+{
 
 class CommandNode;
 
@@ -39,7 +40,7 @@ class SlamContext
     SlamContext();
     virtual ~SlamContext();
 
-    virtual bool process(CommandNode* commandNode);
+    virtual bool process(CommandNode *commandNode);
 };
 
 } // end namespace

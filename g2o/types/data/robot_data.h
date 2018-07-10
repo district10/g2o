@@ -33,35 +33,37 @@
 #include "g2o/core/optimizable_graph.h"
 #include "g2o_types_data_api.h"
 
-namespace g2o {
+namespace g2o
+{
 
-  /**
-   * \brief data recorded by the robot
-   */
-  class G2O_TYPES_DATA_API RobotData : public HyperGraph::Data
-  {
-    public:
-      RobotData();
-      virtual ~RobotData();
+/**
+ * \brief data recorded by the robot
+ */
+class G2O_TYPES_DATA_API RobotData : public HyperGraph::Data
+{
+  public:
+    RobotData();
+    virtual ~RobotData();
 
-      number_t timestamp() const { return _timestamp;}
-      void setTimestamp(number_t ts);
+    number_t timestamp() const { return _timestamp; }
+    void setTimestamp(number_t ts);
 
-      number_t loggerTimestamp() const { return _loggerTimestamp;}
-      void setLoggerTimestamp(number_t ts);
+    number_t loggerTimestamp() const { return _loggerTimestamp; }
+    void setLoggerTimestamp(number_t ts);
 
-      const std::string& tag() const { return _tag;}
-      void setTag(const std::string& tag);
+    const std::string &tag() const { return _tag; }
+    void setTag(const std::string &tag);
 
-      const std::string& hostname() const { return _hostname;}
-      void setHostname(const std::string& hostname);
+    const std::string &hostname() const { return _hostname; }
+    void setHostname(const std::string &hostname);
 
-    protected:
-      number_t _timestamp; ///< timestamp when the measurement was generated
-      number_t _loggerTimestamp; ///< timestamp when the measurement was recorded
-      std::string _tag; ///< string tag (FLASER, ROBOTLASER, ODOM..) of the line in the log
-      std::string _hostname; ///< name of the computer/robot generating the data
-  };
+  protected:
+    number_t _timestamp;       ///< timestamp when the measurement was generated
+    number_t _loggerTimestamp; ///< timestamp when the measurement was recorded
+    std::string _tag; ///< string tag (FLASER, ROBOTLASER, ODOM..) of the line
+                      ///in the log
+    std::string _hostname; ///< name of the computer/robot generating the data
+};
 
 } // end namespace
 

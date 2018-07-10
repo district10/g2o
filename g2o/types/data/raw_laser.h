@@ -27,56 +27,60 @@
 #ifndef G2O_RAW_LASER_H
 #define G2O_RAW_LASER_H
 
-#include "robot_data.h"
-#include "laser_parameters.h"
 #include "g2o_types_data_api.h"
+#include "laser_parameters.h"
+#include "robot_data.h"
 
 #include <vector>
 
-#include<Eigen/Core>
-#include<Eigen/StdVector>
+#include <Eigen/Core>
+#include <Eigen/StdVector>
 
-namespace g2o {
+namespace g2o
+{
 
-  /**
-   * \brief Raw laser measuerement
-   *
-   * A raw laser measuerement. The read/write function correspond to the format of CARMEN.
-   */
-  class G2O_TYPES_DATA_API RawLaser : public RobotData {
-    public:
-      typedef std::vector<Vector2, Eigen::aligned_allocator<Vector2> >      Point2DVector;
+/**
+ * \brief Raw laser measuerement
+ *
+ * A raw laser measuerement. The read/write function correspond to the format of
+ * CARMEN.
+ */
+class G2O_TYPES_DATA_API RawLaser : public RobotData
+{
+  public:
+    typedef std::vector<Vector2, Eigen::aligned_allocator<Vector2>>
+        Point2DVector;
 
-    public:
-      RawLaser();
-      ~RawLaser();
+  public:
+    RawLaser();
+    ~RawLaser();
 
-      virtual bool write(std::ostream& os) const;
-      virtual bool read(std::istream& is);
+    virtual bool write(std::ostream &os) const;
+    virtual bool read(std::istream &is);
 
-      /**
-       * computes a cartesian view of the beams (x,y).
-       * @return a vector with the points of the scan in cartesian coordinates.
-       */
-      Point2DVector cartesian() const;
+    /**
+     * computes a cartesian view of the beams (x,y).
+     * @return a vector with the points of the scan in cartesian coordinates.
+     */
+    Point2DVector cartesian() const;
 
-      //! the range measurements by the laser
-      const std::vector<number_t>& ranges() const { return _ranges;}
-      void setRanges(const std::vector<number_t>& ranges);
+    //! the range measurements by the laser
+    const std::vector<number_t> &ranges() const { return _ranges; }
+    void setRanges(const std::vector<number_t> &ranges);
 
-      //! the remission measurements by the laser
-      const std::vector<number_t>& remissions() const { return _remissions;}
-      void setRemissions(const std::vector<number_t>& remissions);
+    //! the remission measurements by the laser
+    const std::vector<number_t> &remissions() const { return _remissions; }
+    void setRemissions(const std::vector<number_t> &remissions);
 
-      //! the parameters of the laser
-      const LaserParameters& laserParams() const { return _laserParams;}
-      void setLaserParams(const LaserParameters& laserParams);
+    //! the parameters of the laser
+    const LaserParameters &laserParams() const { return _laserParams; }
+    void setLaserParams(const LaserParameters &laserParams);
 
-    protected:
-      std::vector<number_t> _ranges;
-      std::vector<number_t> _remissions;
-      LaserParameters _laserParams;
-  };
+  protected:
+    std::vector<number_t> _ranges;
+    std::vector<number_t> _remissions;
+    LaserParameters _laserParams;
+};
 
 } // end namespace
 

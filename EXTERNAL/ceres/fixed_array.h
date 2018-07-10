@@ -32,13 +32,15 @@
 #ifndef CERES_PUBLIC_INTERNAL_FIXED_ARRAY_H_
 #define CERES_PUBLIC_INTERNAL_FIXED_ARRAY_H_
 
-#include <cstddef>
 #include "Eigen/Core"
 #include "macros.h"
 #include "manual_constructor.h"
+#include <cstddef>
 
-namespace ceres {
-namespace internal {
+namespace ceres
+{
+namespace internal
+{
 
 // A FixedArray<T> represents a non-resizable array of T where the
 // length of the array does not need to be a compile time constant.
@@ -69,120 +71,117 @@ namespace internal {
 // arrays.
 
 #if defined(_WIN64)
-   typedef __int64      ssize_t;
+typedef __int64 ssize_t;
 #elif defined(_WIN32)
-   typedef __int32      ssize_t;
+typedef __int32 ssize_t;
 #endif
 
-template <typename T, ssize_t inline_elements = -1>
-class FixedArray {
- public:
-  // For playing nicely with stl:
-  typedef T value_type;
-  typedef T* iterator;
-  typedef T const* const_iterator;
-  typedef T& reference;
-  typedef T const& const_reference;
-  typedef T* pointer;
-  typedef std::ptrdiff_t difference_type;
-  typedef size_t size_type;
+template <typename T, ssize_t inline_elements = -1> class FixedArray
+{
+  public:
+    // For playing nicely with stl:
+    typedef T value_type;
+    typedef T *iterator;
+    typedef T const *const_iterator;
+    typedef T &reference;
+    typedef T const &const_reference;
+    typedef T *pointer;
+    typedef std::ptrdiff_t difference_type;
+    typedef size_t size_type;
 
-  // REQUIRES: n >= 0
-  // Creates an array object that can store "n" elements.
-  //
-  // FixedArray<T> will not zero-initialiaze POD (simple) types like int,
-  // double, bool, etc.
-  // Non-POD types will be default-initialized just like regular vectors or
-  // arrays.
-  explicit FixedArray(size_type n);
+    // REQUIRES: n >= 0
+    // Creates an array object that can store "n" elements.
+    //
+    // FixedArray<T> will not zero-initialiaze POD (simple) types like int,
+    // double, bool, etc.
+    // Non-POD types will be default-initialized just like regular vectors or
+    // arrays.
+    explicit FixedArray(size_type n);
 
-  // Releases any resources.
-  ~FixedArray();
+    // Releases any resources.
+    ~FixedArray();
 
-  // Returns the length of the array.
-  inline size_type size() const { return size_; }
+    // Returns the length of the array.
+    inline size_type size() const { return size_; }
 
-  // Returns the memory size of the array in bytes.
-  inline size_t memsize() const { return size_ * sizeof(T); }
+    // Returns the memory size of the array in bytes.
+    inline size_t memsize() const { return size_ * sizeof(T); }
 
-  // Returns a pointer to the underlying element array.
-  inline const T* get() const { return &array_[0].element; }
-  inline T* get() { return &array_[0].element; }
+    // Returns a pointer to the underlying element array.
+    inline const T *get() const { return &array_[0].element; }
+    inline T *get() { return &array_[0].element; }
 
-  // REQUIRES: 0 <= i < size()
-  // Returns a reference to the "i"th element.
-  inline T& operator[](size_type i) {
-    return array_[i].element;
-  }
+    // REQUIRES: 0 <= i < size()
+    // Returns a reference to the "i"th element.
+    inline T &operator[](size_type i) { return array_[i].element; }
 
-  // REQUIRES: 0 <= i < size()
-  // Returns a reference to the "i"th element.
-  inline const T& operator[](size_type i) const {
-    return array_[i].element;
-  }
+    // REQUIRES: 0 <= i < size()
+    // Returns a reference to the "i"th element.
+    inline const T &operator[](size_type i) const { return array_[i].element; }
 
-  inline iterator begin() { return &array_[0].element; }
-  inline iterator end() { return &array_[size_].element; }
+    inline iterator begin() { return &array_[0].element; }
+    inline iterator end() { return &array_[size_].element; }
 
-  inline const_iterator begin() const { return &array_[0].element; }
-  inline const_iterator end() const { return &array_[size_].element; }
+    inline const_iterator begin() const { return &array_[0].element; }
+    inline const_iterator end() const { return &array_[size_].element; }
 
- private:
-  // Container to hold elements of type T.  This is necessary to handle
-  // the case where T is a a (C-style) array.  The size of InnerContainer
-  // and T must be the same, otherwise callers' assumptions about use
-  // of this code will be broken.
-  struct InnerContainer {
-    T element;
-  };
+  private:
+    // Container to hold elements of type T.  This is necessary to handle
+    // the case where T is a a (C-style) array.  The size of InnerContainer
+    // and T must be the same, otherwise callers' assumptions about use
+    // of this code will be broken.
+    struct InnerContainer
+    {
+        T element;
+    };
 
-  // How many elements should we store inline?
-  //   a. If not specified, use a default of 256 bytes (256 bytes
-  //      seems small enough to not cause stack overflow or unnecessary
-  //      stack pollution, while still allowing stack allocation for
-  //      reasonably long character arrays.
-  //   b. Never use 0 length arrays (not ISO C++)
-  static const size_type S1 = ((inline_elements < 0)
-                               ? (256/sizeof(T)) : inline_elements);
-  static const size_type S2 = (S1 <= 0) ? 1 : S1;
-  static const size_type kInlineElements = S2;
+    // How many elements should we store inline?
+    //   a. If not specified, use a default of 256 bytes (256 bytes
+    //      seems small enough to not cause stack overflow or unnecessary
+    //      stack pollution, while still allowing stack allocation for
+    //      reasonably long character arrays.
+    //   b. Never use 0 length arrays (not ISO C++)
+    static const size_type S1 =
+        ((inline_elements < 0) ? (256 / sizeof(T)) : inline_elements);
+    static const size_type S2 = (S1 <= 0) ? 1 : S1;
+    static const size_type kInlineElements = S2;
 
-  size_type const       size_;
-  InnerContainer* const array_;
+    size_type const size_;
+    InnerContainer *const array_;
 
-  // Allocate some space, not an array of elements of type T, so that we can
-  // skip calling the T constructors and destructors for space we never use.
-  ManualConstructor<InnerContainer> inline_space_[kInlineElements];
+    // Allocate some space, not an array of elements of type T, so that we can
+    // skip calling the T constructors and destructors for space we never use.
+    ManualConstructor<InnerContainer> inline_space_[kInlineElements];
 };
 
 // Implementation details follow
 
 template <class T, ssize_t S>
 inline FixedArray<T, S>::FixedArray(typename FixedArray<T, S>::size_type n)
-    : size_(n),
-      array_((n <= kInlineElements
-              ? reinterpret_cast<InnerContainer*>(inline_space_)
-              : new InnerContainer[n])) {
-  // Construct only the elements actually used.
-  if (array_ == reinterpret_cast<InnerContainer*>(inline_space_)) {
-    for (size_t i = 0; i != size_; ++i) {
-      inline_space_[i].Init();
+    : size_(n), array_((n <= kInlineElements
+                            ? reinterpret_cast<InnerContainer *>(inline_space_)
+                            : new InnerContainer[n]))
+{
+    // Construct only the elements actually used.
+    if (array_ == reinterpret_cast<InnerContainer *>(inline_space_)) {
+        for (size_t i = 0; i != size_; ++i) {
+            inline_space_[i].Init();
+        }
     }
-  }
 }
 
-template <class T, ssize_t S>
-inline FixedArray<T, S>::~FixedArray() {
-  if (array_ != reinterpret_cast<InnerContainer*>(inline_space_)) {
-    delete[] array_;
-  } else {
-    for (size_t i = 0; i != size_; ++i) {
-      inline_space_[i].Destroy();
+template <class T, ssize_t S> inline FixedArray<T, S>::~FixedArray()
+{
+    if (array_ != reinterpret_cast<InnerContainer *>(inline_space_)) {
+        delete[] array_;
+    } else {
+        for (size_t i = 0; i != size_; ++i) {
+            inline_space_[i].Destroy();
+        }
     }
-  }
 }
 
-}  // namespace internal
-}  // namespace ceres
+} // namespace internal
+} // namespace ceres
 
-#endif  // CERES_PUBLIC_INTERNAL_FIXED_ARRAY_H_
+#endif // CERES_PUBLIC_INTERNAL_FIXED_ARRAY_H_

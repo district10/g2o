@@ -26,22 +26,22 @@
 
 #include <sys/types.h>
 
+#include <algorithm>
 #include <cstdio>
 #include <iostream>
-#include <algorithm>
 
 #include "dl_wrapper.h"
-#include "g2o/stuff/macros.h"
 #include "g2o/stuff/filesys_tools.h"
+#include "g2o/stuff/macros.h"
 
-#if defined (UNIX) || defined(CYGWIN)
+#if defined(UNIX) || defined(CYGWIN)
 #include <dlfcn.h>
 #endif
 
 #ifdef __APPLE__
 #define SO_EXT "dylib"
 #define SO_EXT_LEN 5
-#elif defined (WINDOWS) || defined (CYGWIN)
+#elif defined(WINDOWS) || defined(CYGWIN)
 #define SO_EXT "dll"
 #define SO_EXT_LEN 3
 #else // Linux
@@ -51,89 +51,94 @@
 
 using namespace std;
 
-namespace g2o {
-
-DlWrapper::DlWrapper()
+namespace g2o
 {
-}
+
+DlWrapper::DlWrapper() {}
 
 DlWrapper::~DlWrapper()
 {
-  //clear();
+    // clear();
 }
 
-int DlWrapper::openLibraries(const std::string& directory, const std::string& pattern)
+int DlWrapper::openLibraries(const std::string &directory,
+                             const std::string &pattern)
 {
-  //cerr << "# loading libraries from " << directory << "\t pattern: " << pattern << endl;
-  string searchPattern = directory + "/" + pattern;
-  if (pattern == "")
-    searchPattern = directory + "/*";
-  vector<string> matchingFiles = getFilesByPattern(searchPattern.c_str());
+    // cerr << "# loading libraries from " << directory << "\t pattern: " <<
+    // pattern << endl;
+    string searchPattern = directory + "/" + pattern;
+    if (pattern == "")
+        searchPattern = directory + "/*";
+    vector<string> matchingFiles = getFilesByPattern(searchPattern.c_str());
 
-  int numLibs = 0;
-  for (size_t i = 0; i < matchingFiles.size(); ++i) {
-    const string& filename = matchingFiles[i];
-    if (find(_filenames.begin(), _filenames.end(), filename) != _filenames.end())
-      continue;
+    int numLibs = 0;
+    for (size_t i = 0; i < matchingFiles.size(); ++i) {
+        const string &filename = matchingFiles[i];
+        if (find(_filenames.begin(), _filenames.end(), filename) !=
+            _filenames.end())
+            continue;
 
-    // If we are doing a release build, the wildcards will pick up the
-    // suffixes; unfortunately the "_rd" extension means that we
-    // don't seem to be able to filter out the incompatible files using a
-    // wildcard expansion to wordexp.
+// If we are doing a release build, the wildcards will pick up the
+// suffixes; unfortunately the "_rd" extension means that we
+// don't seem to be able to filter out the incompatible files using a
+// wildcard expansion to wordexp.
 
 #ifndef G2O_LIBRARY_POSTFIX
-    if ((filename.rfind(string("_d.") + SO_EXT) == filename.length() - 3 - SO_EXT_LEN)
-        || (filename.rfind(string("_rd.") + SO_EXT) == filename.length() - 4 - SO_EXT_LEN)
-        || (filename.rfind(string("_s.") + SO_EXT) == filename.length() - 3 - SO_EXT_LEN))
-        continue;
+        if ((filename.rfind(string("_d.") + SO_EXT) ==
+             filename.length() - 3 - SO_EXT_LEN) ||
+            (filename.rfind(string("_rd.") + SO_EXT) ==
+             filename.length() - 4 - SO_EXT_LEN) ||
+            (filename.rfind(string("_s.") + SO_EXT) ==
+             filename.length() - 3 - SO_EXT_LEN))
+            continue;
 #endif
 
-    // open the lib
-    //cerr << "loading " << filename << endl;
-    if (openLibrary(filename))
-      numLibs++;
-  }
+        // open the lib
+        // cerr << "loading " << filename << endl;
+        if (openLibrary(filename))
+            numLibs++;
+    }
 
-  return numLibs;
+    return numLibs;
 }
 
 void DlWrapper::clear()
 {
-# if defined (UNIX) || defined(CYGWIN)
-  for (size_t i = 0; i < _handles.size(); ++i) {
-    dlclose(_handles[i]);
-  }
+#if defined(UNIX) || defined(CYGWIN)
+    for (size_t i = 0; i < _handles.size(); ++i) {
+        dlclose(_handles[i]);
+    }
 #elif defined(WINDOWS)
-  for (size_t i = 0; i < _handles.size(); ++i) {
-    FreeLibrary(_handles[i]);
-  }
+    for (size_t i = 0; i < _handles.size(); ++i) {
+        FreeLibrary(_handles[i]);
+    }
 #endif
-  _filenames.clear();
-  _handles.clear();
+    _filenames.clear();
+    _handles.clear();
 }
 
-bool DlWrapper::openLibrary(const std::string& filename)
+bool DlWrapper::openLibrary(const std::string &filename)
 {
-# if defined (UNIX) || defined(CYGWIN)
-  void* handle = dlopen(filename.c_str(), RTLD_LAZY);
-  if (! handle) {
-    cerr << __PRETTY_FUNCTION__ << " Cannot open library: " << dlerror() << '\n';
-    return false;
-  }
-# elif defined (WINDOWS)
-  HMODULE handle = LoadLibrary(filename.c_str());
-  if (! handle) {
-    cerr << __PRETTY_FUNCTION__ << " Cannot open library." << endl;
-    return false;
-  }
-# endif
+#if defined(UNIX) || defined(CYGWIN)
+    void *handle = dlopen(filename.c_str(), RTLD_LAZY);
+    if (!handle) {
+        cerr << __PRETTY_FUNCTION__ << " Cannot open library: " << dlerror()
+             << '\n';
+        return false;
+    }
+#elif defined(WINDOWS)
+    HMODULE handle = LoadLibrary(filename.c_str());
+    if (!handle) {
+        cerr << __PRETTY_FUNCTION__ << " Cannot open library." << endl;
+        return false;
+    }
+#endif
 
-  //cerr << "loaded " << filename << endl;
+    // cerr << "loaded " << filename << endl;
 
-  _filenames.push_back(filename);
-  _handles.push_back(handle);
-  return true;
+    _filenames.push_back(filename);
+    _handles.push_back(handle);
+    return true;
 }
 
 } // end namespace g2o
-

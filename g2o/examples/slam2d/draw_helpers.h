@@ -29,18 +29,18 @@
 
 #include <qgl.h>
 
-namespace g2o {
+namespace g2o
+{
 
-  /**
-   * draw a disk
-   */
-  void drawDisk(GLfloat radius);
+/**
+ * draw a disk
+ */
+void drawDisk(GLfloat radius);
 
-  /**
-   * draw a circle using GL_LINES
-   */
-  void drawCircle(GLfloat radius, int segments = 32);
-
+/**
+ * draw a circle using GL_LINES
+ */
+void drawCircle(GLfloat radius, int segments = 32);
 }
 
 #endif

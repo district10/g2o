@@ -31,37 +31,34 @@
 #include <iostream>
 using namespace std;
 
-namespace SlamParser {
-
-SlamContext::SlamContext()
+namespace SlamParser
 {
-}
 
-SlamContext::~SlamContext()
-{
-}
+SlamContext::SlamContext() {}
 
-bool SlamContext::process(CommandNode* commandNode)
+SlamContext::~SlamContext() {}
+
+bool SlamContext::process(CommandNode *commandNode)
 {
-  cerr << "SlamContext::process -> ";
-  switch (commandNode->commandType()) {
+    cerr << "SlamContext::process -> ";
+    switch (commandNode->commandType()) {
     case CT_ADD_NODE:
-      cerr << "ADD NODE" << endl;
-      break;
+        cerr << "ADD NODE" << endl;
+        break;
     case CT_ADD_EDGE:
-      cerr << "ADD EDGE" << endl;
-      break;
+        cerr << "ADD EDGE" << endl;
+        break;
     case CT_SOLVE_STATE:
-      cerr << "SOLVE STATE" << endl;
-      break;
+        cerr << "SOLVE STATE" << endl;
+        break;
     case CT_QUERY_STATE:
-      cerr << "QUERY STATE" << endl;
-      break;
+        cerr << "QUERY STATE" << endl;
+        break;
     case CT_FIX:
-      cerr << "FIX NODE" << endl;
-      break;
-  }
-  return true;
+        cerr << "FIX NODE" << endl;
+        break;
+    }
+    return true;
 }
 
 } // end namespace

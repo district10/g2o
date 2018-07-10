@@ -30,10 +30,12 @@
 
 #include <iostream>
 
-namespace g2o {
-  using namespace std;
+namespace g2o
+{
+using namespace std;
 
-  EdgeSE2Offset::EdgeSE2Offset() : BaseBinaryEdge<3, SE2, VertexSE2, VertexSE2>() {
+EdgeSE2Offset::EdgeSE2Offset() : BaseBinaryEdge<3, SE2, VertexSE2, VertexSE2>()
+{
     information().setIdentity();
     _offsetFrom = 0;
     _offsetTo = 0;
@@ -42,79 +44,90 @@ namespace g2o {
     resizeParameters(2);
     installParameter(_offsetFrom, 0);
     installParameter(_offsetTo, 1);
-  }
+}
 
-  bool EdgeSE2Offset::resolveCaches(){
+bool EdgeSE2Offset::resolveCaches()
+{
     assert(_offsetFrom && _offsetTo);
 
     ParameterVector pv(1);
-    pv[0]=_offsetFrom;
-    resolveCache(_cacheFrom, (OptimizableGraph::Vertex*)_vertices[0],"CACHE_SE2_OFFSET",pv);
-    pv[0]=_offsetTo;
-    resolveCache(_cacheTo, (OptimizableGraph::Vertex*)_vertices[1],"CACHE_SE2_OFFSET",pv);
+    pv[0] = _offsetFrom;
+    resolveCache(_cacheFrom, (OptimizableGraph::Vertex *)_vertices[0],
+                 "CACHE_SE2_OFFSET", pv);
+    pv[0] = _offsetTo;
+    resolveCache(_cacheTo, (OptimizableGraph::Vertex *)_vertices[1],
+                 "CACHE_SE2_OFFSET", pv);
     return (_cacheFrom && _cacheTo);
-  }
+}
 
-  bool EdgeSE2Offset::read(std::istream& is) {
+bool EdgeSE2Offset::read(std::istream &is)
+{
     int pidFrom, pidTo;
     is >> pidFrom >> pidTo;
-    if (! setParameterId(0,pidFrom))
-      return false;
-    if (! setParameterId(1,pidTo))
-      return false;
+    if (!setParameterId(0, pidFrom))
+        return false;
+    if (!setParameterId(1, pidTo))
+        return false;
 
     Vector3 meas;
-    for (int i=0; i<3; i++)
-      is >> meas[i];
+    for (int i = 0; i < 3; i++)
+        is >> meas[i];
     setMeasurement(SE2(meas));
     if (is.bad()) {
-      return false;
+        return false;
     }
-    for ( int i=0; i<information().rows() && is.good(); i++)
-      for (int j=i; j<information().cols() && is.good(); j++){
-        is >> information()(i,j);
-        if (i!=j)
-          information()(j,i)=information()(i,j);
-      }
+    for (int i = 0; i < information().rows() && is.good(); i++)
+        for (int j = i; j < information().cols() && is.good(); j++) {
+            is >> information()(i, j);
+            if (i != j)
+                information()(j, i) = information()(i, j);
+        }
     if (is.bad()) {
-      //  we overwrite the information matrix with the Identity
-      information().setIdentity();
-    } 
+        //  we overwrite the information matrix with the Identity
+        information().setIdentity();
+    }
     return true;
-  }
+}
 
-  bool EdgeSE2Offset::write(std::ostream& os) const {
+bool EdgeSE2Offset::write(std::ostream &os) const
+{
     os << _offsetFrom->id() << " " << _offsetTo->id() << " ";
-    for (int i=0; i<3; i++) os  << measurement()[i] << " ";
-    for (int i=0; i<information().rows(); i++)
-      for (int j=i; j<information().cols(); j++) {
-        os <<  information()(i,j) << " ";
-      }
+    for (int i = 0; i < 3; i++)
+        os << measurement()[i] << " ";
+    for (int i = 0; i < information().rows(); i++)
+        for (int j = i; j < information().cols(); j++) {
+            os << information()(i, j) << " ";
+        }
     return os.good();
-  }
+}
 
-  void EdgeSE2Offset::computeError() {
-    SE2 delta=_inverseMeasurement * _cacheFrom->w2n() * _cacheTo->n2w();
+void EdgeSE2Offset::computeError()
+{
+    SE2 delta = _inverseMeasurement * _cacheFrom->w2n() * _cacheTo->n2w();
     _error.head<2>() = delta.translation();
-    _error(2)=delta.rotation().angle();
-  }
+    _error(2) = delta.rotation().angle();
+}
 
-  bool EdgeSE2Offset::setMeasurementFromState(){
+bool EdgeSE2Offset::setMeasurementFromState()
+{
     SE2 delta = _cacheFrom->w2n() * _cacheTo->n2w();
     setMeasurement(delta);
     return true;
-  }
+}
 
-  void EdgeSE2Offset::initialEstimate(const OptimizableGraph::VertexSet& from_, OptimizableGraph::Vertex* /*to_*/) {
-    VertexSE2 *from = static_cast<VertexSE2*>(_vertices[0]);
-    VertexSE2 *to   = static_cast<VertexSE2*>(_vertices[1]);
+void EdgeSE2Offset::initialEstimate(const OptimizableGraph::VertexSet &from_,
+                                    OptimizableGraph::Vertex * /*to_*/)
+{
+    VertexSE2 *from = static_cast<VertexSE2 *>(_vertices[0]);
+    VertexSE2 *to = static_cast<VertexSE2 *>(_vertices[1]);
 
-    SE2 virtualMeasurement = _cacheFrom->offsetParam()->offset() * measurement() * _cacheTo->offsetParam()->offset().inverse();
-    
+    SE2 virtualMeasurement = _cacheFrom->offsetParam()->offset() *
+                             measurement() *
+                             _cacheTo->offsetParam()->offset().inverse();
+
     if (from_.count(from) > 0) {
-      to->setEstimate(from->estimate() * virtualMeasurement);
+        to->setEstimate(from->estimate() * virtualMeasurement);
     } else
-      from->setEstimate(to->estimate() * virtualMeasurement.inverse());
-  }
-
+        from->setEstimate(to->estimate() * virtualMeasurement.inverse());
+}
 }

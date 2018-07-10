@@ -36,7 +36,7 @@
 #ifndef CERES_PUBLIC_INTERNAL_MACROS_H_
 #define CERES_PUBLIC_INTERNAL_MACROS_H_
 
-#include <cstddef>  // For size_t.
+#include <cstddef> // For size_t.
 
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class
@@ -49,9 +49,9 @@
 // Note, that most uses of CERES_DISALLOW_ASSIGN and CERES_DISALLOW_COPY
 // are broken semantically, one should either use disallow both or
 // neither. Try to avoid these in new code.
-#define CERES_DISALLOW_COPY_AND_ASSIGN(TypeName) \
-  TypeName(const TypeName&);               \
-  void operator=(const TypeName&)
+#define CERES_DISALLOW_COPY_AND_ASSIGN(TypeName)                               \
+    TypeName(const TypeName &);                                                \
+    void operator=(const TypeName &)
 
 // A macro to disallow all the implicit constructors, namely the
 // default constructor, copy constructor and operator= functions.
@@ -59,9 +59,9 @@
 // This should be used in the private: declarations for a class
 // that wants to prevent anyone from instantiating it. This is
 // especially useful for classes containing only static methods.
-#define CERES_DISALLOW_IMPLICIT_CONSTRUCTORS(TypeName) \
-  TypeName();                                    \
-  CERES_DISALLOW_COPY_AND_ASSIGN(TypeName)
+#define CERES_DISALLOW_IMPLICIT_CONSTRUCTORS(TypeName)                         \
+    TypeName();                                                                \
+    CERES_DISALLOW_COPY_AND_ASSIGN(TypeName)
 
 // The arraysize(arr) macro returns the # of elements in an array arr.
 // The expression is a compile-time constant, and therefore can be
@@ -77,15 +77,13 @@
 // This template function declaration is used in defining arraysize.
 // Note that the function doesn't need an implementation, as we only
 // use its type.
-template <typename T, size_t N>
-char (&ArraySizeHelper(T (&array)[N]))[N];
+template <typename T, size_t N> char (&ArraySizeHelper(T (&array)[N]))[N];
 
 // That gcc wants both of these prototypes seems mysterious. VC, for
 // its part, can't decide which to use (another mystery). Matching of
 // template overloads: the final frontier.
 #ifndef _WIN32
-template <typename T, size_t N>
-char (&ArraySizeHelper(const T (&array)[N]))[N];
+template <typename T, size_t N> char (&ArraySizeHelper(const T (&array)[N]))[N];
 #endif
 
 #define arraysize(array) (sizeof(ArraySizeHelper(array)))
@@ -135,9 +133,9 @@ char (&ArraySizeHelper(const T (&array)[N]))[N];
 // the definition comes from the over-broad windows.h header that
 // introduces a macro, ERROR, that conflicts with the logging framework
 // that Ceres uses. Instead, rename ARRAYSIZE to CERES_ARRAYSIZE.
-#define CERES_ARRAYSIZE(a)                              \
-  ((sizeof(a) / sizeof(*(a))) /                         \
-   static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
+#define CERES_ARRAYSIZE(a)                                                     \
+    ((sizeof(a) / sizeof(*(a))) /                                              \
+     static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
 
 // Tell the compiler to warn about unused return values for functions
 // declared with this macro.  The macro should be used on function
@@ -145,9 +143,9 @@ char (&ArraySizeHelper(const T (&array)[N]))[N];
 //
 //   Sprocket* AllocateSprocket() MUST_USE_RESULT;
 //
-#if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)) \
-  && !defined(COMPILER_ICC)
-#define CERES_MUST_USE_RESULT __attribute__ ((warn_unused_result))
+#if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)) &&                \
+    !defined(COMPILER_ICC)
+#define CERES_MUST_USE_RESULT __attribute__((warn_unused_result))
 #else
 #define CERES_MUST_USE_RESULT
 #endif
@@ -167,4 +165,4 @@ char (&ArraySizeHelper(const T (&array)[N]))[N];
 #define CERES_ALIGN_OF(T) __alignof(T)
 #endif
 
-#endif  // CERES_PUBLIC_INTERNAL_MACROS_H_
+#endif // CERES_PUBLIC_INTERNAL_MACROS_H_

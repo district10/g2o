@@ -28,101 +28,109 @@
 #include "g2o/apps/g2o_simulator/simutils.h"
 #include <iostream>
 
-namespace g2o{
-  using namespace std;
-  using namespace Eigen;
+namespace g2o
+{
+using namespace std;
+using namespace Eigen;
 
-  SensorSegment2D::SensorSegment2D(const std::string& name_): BinarySensor<Robot2D, EdgeSE2Segment2D, WorldObjectSegment2D>(name_) {
+SensorSegment2D::SensorSegment2D(const std::string &name_)
+    : BinarySensor<Robot2D, EdgeSE2Segment2D, WorldObjectSegment2D>(name_)
+{
     cerr << "I am the constructor" << endl;
-  }
+}
 
-  void SensorSegment2D::addNoise(EdgeType* e){
-    EdgeType::ErrorVector n=_sampler.generateSample();
-    e->setMeasurement(e->measurement()+n);
+void SensorSegment2D::addNoise(EdgeType *e)
+{
+    EdgeType::ErrorVector n = _sampler.generateSample();
+    e->setMeasurement(e->measurement() + n);
     e->setInformation(information());
-  }
+}
 
-  bool SensorSegment2D::isVisible(SensorSegment2D::WorldObjectType* to){
-    if (! _robotPoseObject)
-      return false;
+bool SensorSegment2D::isVisible(SensorSegment2D::WorldObjectType *to)
+{
+    if (!_robotPoseObject)
+        return false;
 
     assert(to && to->vertex());
-    VertexType* v=to->vertex();
+    VertexType *v = to->vertex();
 
     Vector2d p1, p2;
-    SE2 iRobot=_robotPoseObject->vertex()->estimate().inverse();
+    SE2 iRobot = _robotPoseObject->vertex()->estimate().inverse();
     p1 = iRobot * v->estimateP1();
     p2 = iRobot * v->estimateP2();
 
     Vector3d vp1(p1.x(), p1.y(), 0.);
     Vector3d vp2(p2.x(), p2.y(), 0.);
-    Vector3d cp=vp1.cross(vp2); // visibility check
-    if (cp[2]<0)
-      return false;
-
-    int circleClip = clipSegmentCircle(p1,p2,sqrt(_maxRange2));
-    bool clip1=false, clip2=false;
-    switch(circleClip){
-      case -1:
+    Vector3d cp = vp1.cross(vp2); // visibility check
+    if (cp[2] < 0)
         return false;
-      case  0:
+
+    int circleClip = clipSegmentCircle(p1, p2, sqrt(_maxRange2));
+    bool clip1 = false, clip2 = false;
+    switch (circleClip) {
+    case -1:
+        return false;
+    case 0:
         clip1 = true;
         break;
-      case  1:
+    case 1:
         clip2 = true;
         break;
-      case  3:
+    case 3:
         clip1 = true;
         clip2 = true;
         break;
-      default:;
+    default:;
     }
 
-    int fovClip=clipSegmentFov(p1,p2,-_fov, +_fov);
-    switch(fovClip){
-      case -1:
+    int fovClip = clipSegmentFov(p1, p2, -_fov, +_fov);
+    switch (fovClip) {
+    case -1:
         return false;
-      case  0:
+    case 0:
         clip1 = true;
         break;
-      case  1:
+    case 1:
         clip2 = true;
         break;
-      case  3:
+    case 3:
         clip1 = true;
         clip2 = true;
         break;
-      default:;
+    default:;
     }
-    if (!clip1 && !clip2){  // only if both endpoints have not been clipped do something
-      return true;
+    if (!clip1 &&
+        !clip2) { // only if both endpoints have not been clipped do something
+        return true;
     }
     // if all these checks went well, we set the point
     return false;
-  }
+}
 
-  void SensorSegment2D::sense() {
-    _robotPoseObject=0;
-    RobotType* r= dynamic_cast<RobotType*>(robot());
-    std::list<PoseObject*>::reverse_iterator it=r->trajectory().rbegin();
+void SensorSegment2D::sense()
+{
+    _robotPoseObject = 0;
+    RobotType *r = dynamic_cast<RobotType *>(robot());
+    std::list<PoseObject *>::reverse_iterator it = r->trajectory().rbegin();
     int count = 0;
-    while (it!=r->trajectory().rend() && count < 1){
-      if (!_robotPoseObject)
-        _robotPoseObject = *it;
-      it++;
-      count++;
+    while (it != r->trajectory().rend() && count < 1) {
+        if (!_robotPoseObject)
+            _robotPoseObject = *it;
+        it++;
+        count++;
     }
-    for (std::set<BaseWorldObject*>::iterator it=world()->objects().begin(); it!=world()->objects().end(); it++){
-      WorldObjectType* o=dynamic_cast<WorldObjectType*>(*it);
-      if (o && isVisible(o)){
-        EdgeType* e=mkEdge(o);
-        if (e && graph()) {
-          e->setMeasurementFromState();
-          addNoise(e);
-          graph()->addEdge(e);
+    for (std::set<BaseWorldObject *>::iterator it = world()->objects().begin();
+         it != world()->objects().end(); it++) {
+        WorldObjectType *o = dynamic_cast<WorldObjectType *>(*it);
+        if (o && isVisible(o)) {
+            EdgeType *e = mkEdge(o);
+            if (e && graph()) {
+                e->setMeasurementFromState();
+                addNoise(e);
+                graph()->addEdge(e);
+            }
         }
-      }
     }
-  }
+}
 
 } // end namespace

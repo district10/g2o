@@ -27,12 +27,11 @@
 #ifndef G2O_STUFF_MISC_H
 #define G2O_STUFF_MISC_H
 
-#include "macros.h"
 #include "g2o/config.h"
+#include "macros.h"
 
 #include <cmath>
 #include <memory>
-
 
 /** @addtogroup utils **/
 // @{
@@ -43,61 +42,50 @@
  *  This file specifies some general case utility functions
  **/
 
-namespace g2o {
+namespace g2o
+{
 
 /**
  * helper function for creating an object in a unique_ptr.
  */
-template<typename T, typename ...ArgTs>
-std::unique_ptr<T> make_unique(ArgTs&& ...args)
+template <typename T, typename... ArgTs>
+std::unique_ptr<T> make_unique(ArgTs &&... args)
 {
-  return std::unique_ptr<T>(new T(std::forward<ArgTs>(args)...));
+    return std::unique_ptr<T>(new T(std::forward<ArgTs>(args)...));
 };
 
 /**
 * converts a number constant to a number_t constant at compile time
 * to avoid having to cast everything to avoid warnings.
 **/
-inline constexpr number_t cst(long double v)
-{
-  return (number_t)v;
-}
+inline constexpr number_t cst(long double v) { return (number_t)v; }
 
 constexpr number_t const_pi() { return cst(3.14159265358979323846); }
 
 /**
  * return the square value
  */
-template <typename T>
-inline T square(T x)
-{
-  return x*x;
-}
+template <typename T> inline T square(T x) { return x * x; }
 
 /**
  * return the hypot of x and y
  */
-template <typename T>
-inline T hypot(T x, T y)
+template <typename T> inline T hypot(T x, T y)
 {
-  return (T) (std::sqrt(x*x + y*y));
+    return (T)(std::sqrt(x * x + y * y));
 }
 
 /**
  * return the squared hypot of x and y
  */
-template <typename T>
-inline T hypot_sqr(T x, T y)
-{
-  return x*x + y*y;
-}
+template <typename T> inline T hypot_sqr(T x, T y) { return x * x + y * y; }
 
 /**
  * convert from degree to radian
  */
 inline number_t deg2rad(number_t degree)
 {
-  return degree * cst(0.01745329251994329576);
+    return degree * cst(0.01745329251994329576);
 }
 
 /**
@@ -105,7 +93,7 @@ inline number_t deg2rad(number_t degree)
  */
 inline number_t rad2deg(number_t rad)
 {
-  return rad * cst(57.29577951308232087721);
+    return rad * cst(57.29577951308232087721);
 }
 
 /**
@@ -113,17 +101,17 @@ inline number_t rad2deg(number_t rad)
  */
 inline number_t normalize_theta(number_t theta)
 {
-  if (theta >= -const_pi() && theta < const_pi())
-    return theta;
-  
-  number_t multiplier = std::floor(theta / (2*const_pi()));
-  theta = theta - multiplier*2*const_pi();
-  if (theta >= const_pi())
-    theta -= 2*const_pi();
-  if (theta < -const_pi())
-    theta += 2*const_pi();
+    if (theta >= -const_pi() && theta < const_pi())
+        return theta;
 
-  return theta;
+    number_t multiplier = std::floor(theta / (2 * const_pi()));
+    theta = theta - multiplier * 2 * const_pi();
+    if (theta >= const_pi())
+        theta -= 2 * const_pi();
+    if (theta < -const_pi())
+        theta += 2 * const_pi();
+
+    return theta;
 }
 
 /**
@@ -131,7 +119,7 @@ inline number_t normalize_theta(number_t theta)
  */
 inline number_t inverse_theta(number_t th)
 {
-  return normalize_theta(th + const_pi());
+    return normalize_theta(th + const_pi());
 }
 
 /**
@@ -139,85 +127,80 @@ inline number_t inverse_theta(number_t th)
  */
 inline number_t average_angle(number_t theta1, number_t theta2)
 {
-  number_t x, y;
+    number_t x, y;
 
-  x = std::cos(theta1) + std::cos(theta2);
-  y = std::sin(theta1) + std::sin(theta2);
-  if(x == 0 && y == 0)
-    return 0;
-  else
-    return std::atan2(y, x);
+    x = std::cos(theta1) + std::cos(theta2);
+    y = std::sin(theta1) + std::sin(theta2);
+    if (x == 0 && y == 0)
+        return 0;
+    else
+        return std::atan2(y, x);
 }
 
 /**
  * sign function.
  * @return the sign of x. +1 for x > 0, -1 for x < 0, 0 for x == 0
  */
-template <typename T>
-inline int sign(T x)
+template <typename T> inline int sign(T x)
 {
-  if (x > 0)
-    return 1;
-  else if (x < 0)
-    return -1;
-  else
-    return 0;
+    if (x > 0)
+        return 1;
+    else if (x < 0)
+        return -1;
+    else
+        return 0;
 }
 
 /**
  * clamp x to the interval [l, u]
  */
-template <typename T>
-inline T clamp(T l, T x, T u) 
+template <typename T> inline T clamp(T l, T x, T u)
 {
-  if (x < l)
-    return l;
-  if (x > u)
-    return u;
-  return x;
+    if (x < l)
+        return l;
+    if (x > u)
+        return u;
+    return x;
 }
 
 /**
  * wrap x to be in the interval [l, u]
  */
-template <typename T>
-inline T wrap(T l, T x, T u) 
+template <typename T> inline T wrap(T l, T x, T u)
 {
-  T intervalWidth = u - l;
-  while (x < l)
-    x += intervalWidth;
-  while (x > u)
-    x -= intervalWidth;
-  return x;
+    T intervalWidth = u - l;
+    while (x < l)
+        x += intervalWidth;
+    while (x > u)
+        x -= intervalWidth;
+    return x;
 }
 
 /**
  * tests whether there is a NaN in the array
  */
-inline bool arrayHasNaN(const number_t* array, int size, int* nanIndex = 0)
+inline bool arrayHasNaN(const number_t *array, int size, int *nanIndex = 0)
 {
-  for (int i = 0; i < size; ++i)
-    if (g2o_isnan(array[i])) {
-      if (nanIndex)
-        *nanIndex = i;
-      return true;
-    }
-  return false;
+    for (int i = 0; i < size; ++i)
+        if (g2o_isnan(array[i])) {
+            if (nanIndex)
+                *nanIndex = i;
+            return true;
+        }
+    return false;
 }
 
 /**
  * The following two functions are used to force linkage with static libraries.
  */
-extern "C"
-{
-    typedef void (* ForceLinkFunction) (void);
+extern "C" {
+typedef void (*ForceLinkFunction)(void);
 }
 
 struct ForceLinker
 {
     ForceLinker(ForceLinkFunction function) { (function)(); }
 };
-
 
 } // end namespace
 

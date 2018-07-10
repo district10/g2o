@@ -30,17 +30,16 @@ namespace g2o
 {
 using namespace Eigen;
 
-EdgePlane::EdgePlane() :
-    BaseBinaryEdge<4, Vector4, VertexPlane, VertexPlane>()
+EdgePlane::EdgePlane() : BaseBinaryEdge<4, Vector4, VertexPlane, VertexPlane>()
 {
     _information.setIdentity();
     _error.setZero();
 }
 
-bool EdgePlane::read(std::istream& is)
+bool EdgePlane::read(std::istream &is)
 {
-  Vector4  v;
-    int size=4;
+    Vector4 v;
+    int size = 4;
     for (int i = 0; i < size; ++i)
         is >> v[i];
     setMeasurement(v);
@@ -53,9 +52,9 @@ bool EdgePlane::read(std::istream& is)
     return true;
 }
 
-bool EdgePlane::write(std::ostream& os) const
+bool EdgePlane::write(std::ostream &os) const
 {
-    int size=4;
+    int size = 4;
     for (int i = 0; i < size; ++i)
         os << _measurement[i] << " ";
     for (int i = 0; i < size; ++i)
@@ -73,6 +72,5 @@ void EdgePlane::linearizeOplus()
 }
 #endif
 #endif
-
 
 } // end namespace

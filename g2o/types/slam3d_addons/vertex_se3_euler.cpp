@@ -34,23 +34,23 @@ using namespace Eigen;
 namespace g2o
 {
 
-  bool VertexSE3Euler::read(std::istream& is)
-  {
+bool VertexSE3Euler::read(std::istream &is)
+{
     Vector6 est;
-    for (int i=0; i<6; i++)
-      is  >> est[i];
-    Isometry3 transf= g2o::internal::fromVectorET(est);
+    for (int i = 0; i < 6; i++)
+        is >> est[i];
+    Isometry3 transf = g2o::internal::fromVectorET(est);
     setEstimate(transf);
     updateCache();
     return true;
-  }
+}
 
-  bool VertexSE3Euler::write(std::ostream& os) const
-  {
-    Vector6 est =  g2o::internal::toVectorET(estimate());
-    for (int i=0; i<6; i++)
-      os << est[i] << " ";
+bool VertexSE3Euler::write(std::ostream &os) const
+{
+    Vector6 est = g2o::internal::toVectorET(estimate());
+    for (int i = 0; i < 6; i++)
+        os << est[i] << " ";
     return os.good();
-  }
+}
 
 } // end namespace

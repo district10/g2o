@@ -29,129 +29,144 @@
 
 using namespace std;
 
-namespace g2o {
-namespace deprecated {
+namespace g2o
+{
+namespace deprecated
+{
 
-
-  ParameterCamera::ParameterCamera(){
+ParameterCamera::ParameterCamera()
+{
     setId(-1);
-    setKcam(1,1,0.5,0.5);
+    setKcam(1, 1, 0.5, 0.5);
     setOffset();
-  }
+}
 
-  void ParameterCamera::setOffset(const SE3Quat& offset_){
+void ParameterCamera::setOffset(const SE3Quat &offset_)
+{
     ParameterSE3Offset::setOffset(offset_);
     _Kcam_inverseOffsetR = _Kcam * inverseOffsetMatrix().rotation();
-  }
+}
 
-  void ParameterCamera::setKcam(double fx, double fy, double cx, double cy){
+void ParameterCamera::setKcam(double fx, double fy, double cx, double cy)
+{
     _Kcam.setZero();
-    _Kcam(0,0) = fx;
-    _Kcam(1,1) = fy;
-    _Kcam(0,2) = cx;
-    _Kcam(1,2) = cy;
-    _Kcam(2,2) = 1.0;
+    _Kcam(0, 0) = fx;
+    _Kcam(1, 1) = fy;
+    _Kcam(0, 2) = cx;
+    _Kcam(1, 2) = cy;
+    _Kcam(2, 2) = 1.0;
     _invKcam = _Kcam.inverse();
     _Kcam_inverseOffsetR = _Kcam * inverseOffsetMatrix().rotation();
-  }
+}
 
-
-  bool ParameterCamera::read(std::istream& is) {
+bool ParameterCamera::read(std::istream &is)
+{
     Vector7 off;
-    for (int i=0; i<7; i++)
-      is >> off[i];
+    for (int i = 0; i < 7; i++)
+        is >> off[i];
     setOffset(SE3Quat(off));
-    double fx,fy,cx,cy;
+    double fx, fy, cx, cy;
     is >> fx >> fy >> cx >> cy;
-    setKcam(fx,fy,cx,cy);
+    setKcam(fx, fy, cx, cy);
     return is.good();
-  }
-  
-  bool ParameterCamera::write(std::ostream& os) const {
+}
+
+bool ParameterCamera::write(std::ostream &os) const
+{
     Vector7 off = offset().toVector();
-    for (int i=0; i<7; i++)
-      os << off[i] << " ";
-    os << _Kcam(0,0) << " ";
-    os << _Kcam(1,1) << " ";
-    os << _Kcam(0,2) << " ";
-    os << _Kcam(1,2) << " ";
+    for (int i = 0; i < 7; i++)
+        os << off[i] << " ";
+    os << _Kcam(0, 0) << " ";
+    os << _Kcam(1, 1) << " ";
+    os << _Kcam(0, 2) << " ";
+    os << _Kcam(1, 2) << " ";
     return os.good();
-  }
+}
 
-  bool CacheCamera::resolveDependancies(){
-    if  (!CacheSE3Offset::resolveDependancies())
-      return false;
-    params = dynamic_cast<ParameterCamera*>(_parameters[0]);
+bool CacheCamera::resolveDependancies()
+{
+    if (!CacheSE3Offset::resolveDependancies())
+        return false;
+    params = dynamic_cast<ParameterCamera *>(_parameters[0]);
     return params != 0;
-  }
+}
 
-  void CacheCamera::updateImpl(){
+void CacheCamera::updateImpl()
+{
     CacheSE3Offset::updateImpl();
-    _w2i.matrix().topLeftCorner<3,4>() = params->Kcam() * w2nMatrix().matrix().topLeftCorner<3,4>();
-  }
+    _w2i.matrix().topLeftCorner<3, 4>() =
+        params->Kcam() * w2nMatrix().matrix().topLeftCorner<3, 4>();
+}
 
 #ifdef G2O_HAVE_OPENGL
-  static void drawMyPyramid(float height, float side){
+static void drawMyPyramid(float height, float side)
+{
     Eigen::Vector3f p[6];
     p[0] << 0, 0., 0.;
     p[1] << -side, -side, height;
-    p[2] << -side,  side, height;
-    p[3] << side,  side, height;
+    p[2] << -side, side, height;
+    p[3] << side, side, height;
     p[4] << side, -side, height;
     p[5] << -side, -side, height;
 
     glBegin(GL_TRIANGLES);
     for (int i = 1; i < 5; ++i) {
-      Eigen::Vector3f normal = (p[i] - p[0]).cross(p[i+1] - p[0]);
-      glNormal3f(normal.x(), normal.y(), normal.z());
-      glVertex3f(p[0].x(), p[0].y(), p[0].z());
-      glVertex3f(p[i].x(), p[i].y(), p[i].z());
-      glVertex3f(p[i+1].x(), p[i+1].y(), p[i+1].z());
+        Eigen::Vector3f normal = (p[i] - p[0]).cross(p[i + 1] - p[0]);
+        glNormal3f(normal.x(), normal.y(), normal.z());
+        glVertex3f(p[0].x(), p[0].y(), p[0].z());
+        glVertex3f(p[i].x(), p[i].y(), p[i].z());
+        glVertex3f(p[i + 1].x(), p[i + 1].y(), p[i + 1].z());
     }
     glEnd();
-  }
+}
 
-  CacheCameraDrawAction::CacheCameraDrawAction(): DrawAction(typeid(CacheCamera).name()){
-    _previousParams = (DrawAction::Parameters*)0x42;
+CacheCameraDrawAction::CacheCameraDrawAction()
+    : DrawAction(typeid(CacheCamera).name())
+{
+    _previousParams = (DrawAction::Parameters *)0x42;
     refreshPropertyPtrs(0);
-  }
+}
 
+bool CacheCameraDrawAction::refreshPropertyPtrs(
+    HyperGraphElementAction::Parameters *params_)
+{
+    if (!DrawAction::refreshPropertyPtrs(params_))
+        return false;
+    if (_previousParams) {
+        _cameraZ = _previousParams->makeProperty<FloatProperty>(
+            _typeName + "::CAMERA_Z", .05f);
+        _cameraSide = _previousParams->makeProperty<FloatProperty>(
+            _typeName + "::CAMERA_SIDE", .05f);
 
-  bool CacheCameraDrawAction::refreshPropertyPtrs(HyperGraphElementAction::Parameters* params_){
-    if (! DrawAction::refreshPropertyPtrs(params_))
-      return false;
-    if (_previousParams){
-      _cameraZ = _previousParams->makeProperty<FloatProperty>(_typeName + "::CAMERA_Z", .05f);
-      _cameraSide = _previousParams->makeProperty<FloatProperty>(_typeName + "::CAMERA_SIDE", .05f);
-      
     } else {
-      _cameraZ = 0;
-      _cameraSide = 0;
+        _cameraZ = 0;
+        _cameraSide = 0;
     }
     return true;
-  }
+}
 
-  HyperGraphElementAction* CacheCameraDrawAction::operator()(HyperGraph::HyperGraphElement* element, 
-                 HyperGraphElementAction::Parameters* params){
-    if (typeid(*element).name()!=_typeName)
-      return 0;
-    CacheCamera* that = static_cast<CacheCamera*>(element);
+HyperGraphElementAction *CacheCameraDrawAction::
+operator()(HyperGraph::HyperGraphElement *element,
+           HyperGraphElementAction::Parameters *params)
+{
+    if (typeid(*element).name() != _typeName)
+        return 0;
+    CacheCamera *that = static_cast<CacheCamera *>(element);
     refreshPropertyPtrs(params);
-    if (! _previousParams)
-      return this;
-    
+    if (!_previousParams)
+        return this;
+
     if (_show && !_show->value())
-      return this;
+        return this;
 
     glPushMatrix();
     glMultMatrixd(that->camParams()->offsetMatrix().data());
     if (_cameraZ && _cameraSide)
-      drawMyPyramid(_cameraZ->value(), _cameraSide->value());
+        drawMyPyramid(_cameraZ->value(), _cameraSide->value());
     glPopMatrix();
 
     return this;
-  }
+}
 #endif
-
 }
 }

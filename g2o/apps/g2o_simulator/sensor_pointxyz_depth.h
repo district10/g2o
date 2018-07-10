@@ -26,26 +26,31 @@
 
 #ifndef G2O_SENSOR_POINTXYZ_DEPTH_H_
 #define G2O_SENSOR_POINTXYZ_DEPTH_H_
-#include "simulator3d_base.h"
-#include "pointsensorparameters.h"
 #include "g2o_simulator_api.h"
+#include "pointsensorparameters.h"
+#include "simulator3d_base.h"
 
-namespace g2o {
+namespace g2o
+{
 
-  class G2O_SIMULATOR_API SensorPointXYZDepth: public PointSensorParameters, public BinarySensor<Robot3D, EdgeSE3PointXYZDepth, WorldObjectTrackXYZ>{
+class G2O_SIMULATOR_API SensorPointXYZDepth
+    : public PointSensorParameters,
+      public BinarySensor<Robot3D, EdgeSE3PointXYZDepth, WorldObjectTrackXYZ>
+{
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     typedef PoseVertexType::EstimateType RobotPoseType;
-    SensorPointXYZDepth(const std::string& name_);
+    SensorPointXYZDepth(const std::string &name_);
     virtual void sense();
     virtual void addParameters();
-    ParameterSE3Offset* offsetParam() {return _offsetParam;};
-    void addNoise(EdgeType* e);
+    ParameterSE3Offset *offsetParam() { return _offsetParam; };
+    void addNoise(EdgeType *e);
+
   protected:
-    bool isVisible(WorldObjectType* to);
+    bool isVisible(WorldObjectType *to);
     RobotPoseType _sensorPose;
-    ParameterSE3Offset* _offsetParam;
-  };
+    ParameterSE3Offset *_offsetParam;
+};
 }
 
 #endif
